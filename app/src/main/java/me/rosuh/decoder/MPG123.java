@@ -2,7 +2,7 @@ package me.rosuh.decoder;
 
 public class MPG123{
 	static {
-		System.loadLibrary("libmpg123");
+		System.loadLibrary("mpg123");
 		MPG123.init();
 	}
 
