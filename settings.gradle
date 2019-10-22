@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':libmpg123'
 rootProject.name='MPG123-Android'
