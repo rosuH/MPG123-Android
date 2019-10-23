@@ -22,6 +22,11 @@ typedef struct _MP3File
 	size_t offset;
 } MP3File;
 
+
+void printerr(const char* message, int err) {
+    __android_log_print(ANDROID_LOG_ERROR, "podax-jni", "error - %s: %d %s", message, err, mpg123_plain_strerror(err));
+}
+
 MP3File* mp3file_init(mpg123_handle *handle) {
 	MP3File* mp3file = malloc(sizeof(MP3File));
 	memset(mp3file, 0, sizeof(MP3File));
@@ -34,6 +39,40 @@ void mp3file_delete(MP3File *mp3file) {
 	mpg123_delete(mp3file->handle);
 	free(mp3file->buffer);
 	free(mp3file);
+}
+
+int mp3file_determineStats(MP3File *mp3) {
+    int err = -1;
+    if (mp3 == NULL)
+        return err;
+
+    int encoding;
+    mpg123_handle* mh = mp3->handle;
+    err = mpg123_getformat(mh, &mp3->rate, &mp3->channels, &encoding);
+    if (err == MPG123_NEED_MORE)
+        return err;
+    if (err != MPG123_OK) {
+        printerr("mpg123_getformat", err);
+        return err;
+    }
+
+    mpg123_format_none(mh);
+    mpg123_format(mh, mp3->rate, mp3->channels, encoding);
+
+    mp3->num_samples = mpg123_length(mh);
+    mp3->samples_per_frame = mpg123_spf(mh);
+    mp3->secs_per_frame = mpg123_tpf(mh);
+
+    if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0)
+        mp3->num_frames = 0;
+    else
+        mp3->num_frames = mp3->num_samples / mp3->samples_per_frame;
+
+    if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0 || mp3->secs_per_frame < 0)
+        mp3->duration = 0;
+    else
+        mp3->duration = mp3->num_samples / mp3->samples_per_frame * mp3->secs_per_frame;
+    return err;
 }
 
 JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_init
@@ -56,6 +95,63 @@ JNIEXPORT jstring JNICALL Java_me_rosuh_libmpg123_MPG123_getErrorMessage
 {
 	return (*env)->NewStringUTF(env, mpg123_plain_strerror(error));
 }
+
+JNIEXPORT jlong JNICALL Java_me_rosuh_libmpg123_MPG123_openStream
+        (JNIEnv *env, jclass c)
+{
+    // init mpg123 handle
+    int err = MPG123_OK;
+    mpg123_handle *mh = mpg123_new(NULL, &err);
+    if (err != MPG123_OK) {
+        __android_log_print(ANDROID_LOG_INFO, "podax-jni", "mpg123_new error: %s", mpg123_plain_strerror(err));
+        return 0;
+    }
+
+    // set handle up as stream
+    err = mpg123_open_feed(mh);
+    if (err != MPG123_OK) {
+        __android_log_print(ANDROID_LOG_INFO, "podax-jni", "mpg123_open_feed error: %s", mpg123_plain_strerror(err));
+        return 0;
+    }
+
+    MP3File* stream = mp3file_init(mh);
+    return  (jlong)stream;
+}
+
+JNIEXPORT void JNICALL Java_me_rosuh_libmpg123_MPG123_feed
+        (JNIEnv *env, jclass c, jlong handle, jbyteArray in_buffer, jint in_size)
+{
+    MP3File *mp3 = (MP3File*)handle;
+    mpg123_handle *mh = mp3->handle;
+    jboolean isCopy;
+    jbyte* b = (*env)->GetByteArrayElements(env, in_buffer, &isCopy);
+
+    int err = mpg123_feed(mh, b, in_size);
+    if (err != MPG123_OK)
+        __android_log_print(ANDROID_LOG_INFO, "podax-jni", "mpg123_feed error: %s", mpg123_plain_strerror(err));
+    (*env)->ReleaseByteArrayElements(env, in_buffer, b, JNI_ABORT);
+
+    if (mp3->rate == 0) {
+        off_t frame_offset;
+        unsigned char* audio;
+        size_t bytes_done;
+        err = mpg123_decode_frame(mh, &frame_offset, &audio, &bytes_done);
+        if (err == MPG123_NEW_FORMAT) {
+            int encoding;
+            err = mpg123_getformat(mh, &mp3->rate, &mp3->channels, &encoding);
+            if (err != MPG123_NEED_MORE && err != MPG123_OK) {
+                printerr("mpg123_getformat", err);
+                return;
+            }
+
+            mp3->samples_per_frame = mpg123_spf(mh);
+            mp3->secs_per_frame = mpg123_tpf(mh);
+        }
+        if (err != MPG123_OK && err != MPG123_NEED_MORE)
+            __android_log_print(ANDROID_LOG_INFO, "podax-jni", "cannot get rate: %s", mpg123_plain_strerror(err));
+    }
+}
+
 
 JNIEXPORT jlong JNICALL Java_me_rosuh_libmpg123_MPG123_openFile
 	(JNIEnv *env, jclass c, jstring filename)
@@ -100,7 +196,8 @@ JNIEXPORT jlong JNICALL Java_me_rosuh_libmpg123_MPG123_openFile
 					if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0 || mp3->secs_per_frame < 0)
 						mp3->duration = 0;
 					else
-						mp3->duration = mp3->num_samples / mp3->samples_per_frame * mp3->secs_per_frame;
+						mp3->duration = (float) (mp3->num_samples / mp3->samples_per_frame *
+                                                 mp3->secs_per_frame);
 
                     return (jlong)mp3;
                 }
@@ -118,6 +215,47 @@ JNIEXPORT void JNICALL Java_me_rosuh_libmpg123_MPG123_delete
 {
 	MP3File *mp3 = (MP3File*)handle;
 	mp3file_delete(mp3);
+}
+
+JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_readFrame
+        (JNIEnv *env, jclass c, jlong handle, jshortArray out_buffer)
+{
+    MP3File *mp3 = (MP3File *)handle;
+    mpg123_handle *mh = mp3->handle;
+
+    off_t frame_offset;
+    unsigned char* audio;
+    size_t bytes_done;
+    int err = mpg123_decode_frame(mh, &frame_offset, &audio, &bytes_done);
+    if (err == MPG123_NEED_MORE)
+        return -1;
+    if (err == MPG123_DONE)
+        return 0;
+    if (err != MPG123_OK) {
+        printerr("mpg123_decode_frame", err);
+        return -2;
+    }
+
+    if (out_buffer == NULL || (*env)->GetArrayLength(env, out_buffer) < bytes_done / 2)
+        out_buffer = (*env)->NewShortArray(env, bytes_done/2);
+    short* c_array = (*env)->GetShortArrayElements(env, out_buffer, 0);
+    memcpy(c_array, audio, bytes_done);
+    (*env)->ReleaseShortArrayElements(env, out_buffer, c_array, 0);
+
+    return bytes_done / 2;
+}
+
+JNIEXPORT jboolean JNICALL Java_me_rosuh_libmpg123_MPG123_skipFrame
+        (JNIEnv *env, jclass c, jlong handle)
+{
+    MP3File *mp3 = (MP3File *)handle;
+    mpg123_handle *mh = mp3->handle;
+
+    off_t frame_offset;
+    unsigned char* audio;
+    size_t bytes_done;
+    int err = mpg123_decode_frame(mh, &frame_offset, &audio, &bytes_done);
+    return (err == MPG123_OK) ? JNI_TRUE : JNI_FALSE;
 }
 
 static inline int readBuffer(MP3File* mp3)
@@ -201,6 +339,8 @@ JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_getNumChannels
 	(JNIEnv *env, jclass c, jlong handle)
 {
     MP3File *mp3 = (MP3File *)handle;
+    if (mp3->channels == 0)
+        mp3file_determineStats(mp3);
     return mp3->channels;
 }
 
@@ -208,6 +348,8 @@ JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_getRate
 	(JNIEnv *env, jclass c, jlong handle)
 {
     MP3File *mp3 = (MP3File *)handle;
+    if (mp3->rate == 0)
+        mp3file_determineStats(mp3);
     return mp3->rate;
 }
 
@@ -222,6 +364,8 @@ JNIEXPORT jfloat JNICALL Java_me_rosuh_libmpg123_MPG123_getDuration
 	(JNIEnv *env, jclass c, jlong handle)
 {
     MP3File *mp3 = (MP3File *)handle;
+    if (mp3->duration == 0)
+        mp3file_determineStats(mp3);
     return mp3->duration;
 }
 
@@ -252,4 +396,23 @@ JNIEXPORT jintArray JNICALL Java_me_rosuh_libmpg123_MPG123_getSupportedRates
 		resultData[i] = list[i];
 	(*env)->ReleasePrimitiveArrayCritical(env, result, resultData, 0);
 	return result;
+}
+
+JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_getSeekFrameOffset
+        (JNIEnv *env, jclass c, jlong mp3file, jfloat seconds)
+{
+    MP3File *mp3 = (MP3File *)mp3file;
+    mpg123_handle *mh = mp3->handle;
+
+    size_t fill;
+    off_t step;
+    off_t* offsets;
+    mpg123_index(mh, &offsets, &step, &fill);
+
+    int target_frame = (int) (seconds / mp3->secs_per_frame); // the frame number to seek to
+    int target_index = target_frame / step; // the closest index to the target frame
+    // say so if there aren't enough entries in the index
+    if (target_index >= fill)
+        return -1;
+    return offsets[target_index];
 }
