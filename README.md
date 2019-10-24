@@ -58,7 +58,7 @@ dependencies {
 
 ## Usage
 
-Take a look at [Demo] I wrote [https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt).
+Take a look at [Demo][https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt) I wrote.
 
 ## Other
 
