@@ -1,5 +1,7 @@
 ## MPG123 在 Android 上的移植版
 
+[![](https://jitpack.io/v/rosuH/MPG123-Android.svg)](https://jitpack.io/#rosuH/MPG123-Android)
+
 MPG123 是一个轻量并且小巧的，可用于解码和播放 MP3 文件的库。
 
 本依赖库提供了部分常见的 API，可供 Java 层调用：
