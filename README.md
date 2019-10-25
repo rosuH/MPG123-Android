@@ -1,5 +1,9 @@
 ## MPG123 Migration on Android
 
+[![](https://jitpack.io/v/rosuH/MPG123-Android.svg)](https://jitpack.io/#rosuH/MPG123-Android)
+
+[简体中文版](https://github.com/rosuH/MPG123-Android/blob/master/README_zh.md)
+
 MPG123 is a lightweight and compact library for decoding and playing MP3 files.
 
 This dependency library provides some common APIs that can be called by the Java layer:
