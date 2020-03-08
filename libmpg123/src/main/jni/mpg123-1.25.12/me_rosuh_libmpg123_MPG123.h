@@ -100,8 +100,8 @@ JNIEXPORT void JNICALL Java_me_rosuh_libmpg123_MPG123_feed
  * Method:    readFrame
  * Signature: (J[S)I
  */
-JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_readFrame
-  (JNIEnv *, jclass, jlong, jshortArray);
+JNIEXPORT jshortArray JNICALL Java_com_lizhiweike_audioedit_MPG123_readFrame
+        (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     me_rosuh_libmpg123_MPG123

@@ -27,7 +27,7 @@ public class MPG123 {
 
     protected static native void feed(long handle, byte[] buffer, int count);
 
-    protected static native int readFrame(long handle, short[] buffer);
+    protected static native short[] readFrame(long handle);
 
     protected static native int getSeekFrameOffset(long handle, float position);
 
@@ -51,8 +51,13 @@ public class MPG123 {
             MPG123.delete(_handle);
     }
 
-    public int readFrame(short[] buffer) {
-        return MPG123.readFrame(_handle, buffer);
+    /**
+     * 返回一帧解码的数据 buffer；如果返回空 buffer 表示解码完成；返回 null 表示错误
+     * @return decode frame buffer if successfully; return a empty buffer if decode done , error would be a null
+     *
+     */
+    public short[] readFrame() {
+        return MPG123.readFrame(_handle);
     }
 
     public boolean skipFrame() {

@@ -8,8 +8,8 @@ MPG123 is a lightweight and compact library for decoding and playing MP3 files.
 
 This dependency library provides some common APIs that can be called by the Java layer:
 
-```java
-Int readFrame(short[] buffer)
+```
+short[] readFrame()
 Boolean skipFrame()
 Int seek(float offset)
 Float getPosition()
@@ -39,7 +39,7 @@ Features supported by this dependency library:
     - 64-bit arm64-v8a is recommended, self-test loading time is reduced by 22.3% compared to armeabi-v7a
 - Quick access to existing projects with Gradle
 
-## access
+## Download
 
 The project's `build.gradle`.
 
@@ -62,7 +62,27 @@ dependencies {
 
 ## Usage
 
-Take a look at [Demo](https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt) I wrote.
+```kotlin
+/**
+* decode mp3 frame using readFrame() method.
+*/
+private fun decode(decoder: MPG123, length: Long): ArrayList<Int> {
+    val shortBuffer = ArrayList<Int>((length * 4).toInt())
+    while (true) {
+        val pcm: ShortArray? = decoder.readFrame()
+        if (pcm == null || pcm.isEmpty()) {
+            break
+        } else {
+            shortBuffer.add(calculateRealVolume(pcm))
+        }
+    }
+    return shortBuffer
+}
+```
+
+That is easy to use, you can take a look at [Demo](https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt) I wrote.
+
+![sample](.\sample.png)
 
 ## Other
 
