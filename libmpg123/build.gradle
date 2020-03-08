@@ -1,11 +1,13 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group='com.github.rosuH'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.0"
+    buildToolsVersion "29.0.2"
 
 
     defaultConfig {
@@ -28,9 +30,16 @@ android {
     externalNativeBuild {
         ndkBuild {
             path file('src/main/jni/Android.mk')
+            buildStagingDirectory "src/main/libs"
         }
     }
 
 }
 
-dependencies { implementation fileTree(dir: 'libs', include: ['*.jar']) }
+dependencies { implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "androidx.core:core-ktx:1.2.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
+}
