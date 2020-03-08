@@ -82,7 +82,7 @@ private fun decode(decoder: MPG123, length: Long): ArrayList<Int> {
 
 That is easy to use, you can take a look at [Demo](https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt) I wrote.
 
-![sample](.\sample.png)
+![sample](https://raw.githubusercontent.com/rosuH/MPG123-Android/master/sample.png)
 
 ## Other
 
