@@ -80,6 +80,7 @@ private fun decode(decoder: MPG123, length: Long): ArrayList<Int> {
 
 看看我写的 [Demo](https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt)。
 
+![sample](https://raw.githubusercontent.com/rosuH/MPG123-Android/master/sample.png)
 ## 其他
 
 [MPG123](https://www.mpg123.de/) 是一个基于 LGPL 2.1 开源的自由软件，原则上可以被商用软件和闭源软件所使用，但不允许进行二次开发。一般来说，本库没有对 MPG123 源码进行修改和变动，仅是编写 API 所以应该没有风险。
