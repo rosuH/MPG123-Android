@@ -27,7 +27,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':libmpg123')
+    debugImplementation project(':libmpg123')
+    releaseImplementation('com.github.rosuH:MPG123-Android:dev-SNAPSHOT')
     implementation 'me.rosuh:AndroidFilePicker:0.6.1'
     implementation 'com.robinhood.spark:spark:1.2.0'
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

@@ -6,8 +6,8 @@ MPG123 是一个轻量并且小巧的，可用于解码和播放 MP3 文件的�
 
 本依赖库提供了部分常见的 API，可供 Java 层调用：
 
-```java
-int readFrame(short[] buffer)
+```
+short[] readFrame()
 boolean skipFrame()
 int seek(float offset)
 float getPosition()
@@ -60,9 +60,25 @@ dependencies {
 
 ## 使用
 
+```kotlin
+/**
+* decode mp3 frame using readFrame() method.
+*/
+private fun decode(decoder: MPG123, length: Long): ArrayList<Int> {
+    val shortBuffer = ArrayList<Int>((length * 4).toInt())
+    while (true) {
+        val pcm: ShortArray? = decoder.readFrame()
+        if (pcm == null || pcm.isEmpty()) {
+            break
+        } else {
+            shortBuffer.add(calculateRealVolume(pcm))
+        }
+    }
+    return shortBuffer
+}
+```
+
 看看我写的 [Demo](https://github.com/rosuH/MPG123-Android/blob/master/app/src/main/java/me/rosuh/decoder/MainActivity.kt)。
-
-
 
 ## 其他
 
@@ -74,7 +90,7 @@ dependencies {
 
 参考：
 
--   [android-mp3decoders](https://github.com/thasmin/android-mp3decoders)
--   [SDL2_mixer](https://github.com/emscripten-ports/SDL2_mixer/)
+-  [android-mp3decoders](https://github.com/thasmin/android-mp3decoders)
+-  [SDL2_mixer](https://github.com/emscripten-ports/SDL2_mixer/)
 
 
