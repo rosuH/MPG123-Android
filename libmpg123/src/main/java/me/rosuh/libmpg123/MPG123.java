@@ -13,7 +13,7 @@ public class MPG123 {
 
     protected static native boolean skipFrame(long handle);
 
-    protected static native int seek(long handle, float offsetInSeconds);
+    protected static native int seek(long handle, float offsetInSeconds, int mode);
 
     protected static native float getPosition(long handle);
 
@@ -63,9 +63,34 @@ public class MPG123 {
     public boolean skipFrame() {
         return MPG123.skipFrame(_handle);
     }
-
+    
     public int seek(float offset) {
-        return MPG123.seek(_handle, offset);
+        return seek(offset, SeekMode.SEEK_SET);
+    }
+
+    /**
+     * Seek with modes:
+     * SEEK_SET: set position to (or near to) specified offset
+     * SEEK_CUR: change position by offset from now
+     * SEEK_END: set position to offset from end
+     * https://www.mpg123.de/api/group__mpg123__seek.shtml
+     * @author rosuh@qq.com
+     * @date 2021/8/30
+    */
+    public int seek(float offset, SeekMode mode) {
+        int nativeMode = 0;
+        switch (mode) {
+            case SEEK_CUR:
+                nativeMode = 0;
+                break;
+            case SEEK_SET:
+                nativeMode = 1;
+                break;
+            case SEEK_END:
+                nativeMode = 2;
+                break;
+        }
+        return MPG123.seek(_handle, offset, nativeMode);
     }
 
     public float getPosition() {
