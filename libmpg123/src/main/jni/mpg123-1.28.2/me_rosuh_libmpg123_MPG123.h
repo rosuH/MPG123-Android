@@ -45,7 +45,7 @@ JNIEXPORT jboolean JNICALL Java_me_rosuh_libmpg123_MPG123_skipFrame
  * Signature: (JF)I
  */
 JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_seek
-  (JNIEnv *, jclass, jlong, jfloat);
+  (JNIEnv *, jclass, jlong, jfloat, jint);
 
 /*
  * Class:     me_rosuh_libmpg123_MPG123

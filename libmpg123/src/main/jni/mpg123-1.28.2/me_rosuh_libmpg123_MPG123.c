@@ -306,10 +306,13 @@ JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_skipSamples
 }
 
 JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_seek
-        (JNIEnv *env, jclass c, jlong handle, jfloat seconds) {
+        (JNIEnv *env, jclass c, jlong handle, jfloat seconds, jint mode) {
     MP3File *mp3 = (MP3File *) handle;
+    if (mode != SEEK_SET && mode != SEEK_CUR && mode != SEEK_END) {
+        mode = SEEK_SET;
+    }
     return mpg123_seek(mp3->handle, (int) seconds / mp3->secs_per_frame * mp3->samples_per_frame,
-                       SEEK_SET);
+                       mode);
 }
 
 JNIEXPORT float JNICALL Java_me_rosuh_libmpg123_MPG123_getPosition
