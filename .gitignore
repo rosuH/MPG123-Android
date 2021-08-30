@@ -384,3 +384,5 @@ Thumbs.db
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,android,java,intellij,androidstudio,c++
+libmpg123/src/main/libs/*.json
+libmpg123/src/main/libs/ndkBuild/debug/*
