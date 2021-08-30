@@ -17,6 +17,7 @@ import me.rosuh.filepicker.config.AbstractFileFilter
 import me.rosuh.filepicker.config.FilePickerManager
 import me.rosuh.filepicker.filetype.AudioFileType
 import me.rosuh.libmpg123.MPG123
+import me.rosuh.libmpg123.SeekMode
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         decoder.printAll()
         Thread {
             runOnUiThread { tv?.text = "We are loading now" }
-            decoder.seek(30f)
+            decoder.seek(5f, SeekMode.SEEK_CUR)
             val list = decode(decoder, File(url).length())
             runOnUiThread {
                 tv?.text = "Finish"
