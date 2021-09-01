@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Telephony
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,8 @@ import kotlin.math.sqrt
 
 
 class MainActivity : AppCompatActivity() {
+
+    private var url: String = ""
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +52,22 @@ class MainActivity : AppCompatActivity() {
                 .enableSingleChoice()
                 .forResult(FilePickerManager.REQUEST_CODE)
         }
+
+        btn_seek.setOnClickListener {
+            if (url.isEmpty()) {
+                Toast.makeText(this, "Choose file first", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            handleDecodeWithSeek(url, false)
+        }
+
+        btn_seek_frame.setOnClickListener {
+            if (url.isEmpty()) {
+                Toast.makeText(this, "Choose file first", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            handleDecodeWithSeek(url, true)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -57,8 +76,9 @@ class MainActivity : AppCompatActivity() {
             FilePickerManager.REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val list = FilePickerManager.obtainData()
+                    url = list.first()
                     // process audio decode
-                    handleDecode(list[0])
+                    handleDecode(url)
                 } else {
                     Toast.makeText(this, "没有选择任何东西~", Toast.LENGTH_SHORT).show()
                 }
@@ -66,18 +86,46 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleDecode(url: String) {
+    private fun handleDecode(
+        url: String,
+    ) {
         val decoder = MPG123(url)
         decoder.printAll()
         Thread {
             runOnUiThread { tv?.text = "We are loading now" }
-            decoder.seek(5f, SeekMode.SEEK_CUR)
             val list = decode(decoder, File(url).length())
             runOnUiThread {
                 tv?.text = "Finish"
                 sparkview.sparkAnimator = MorphSparkAnimator()
                 sparkview.adapter = MyAdapter(list)
             }
+        }.start()
+    }
+
+    private fun handleDecodeWithSeek(
+        url: String,
+        isSeekFrame: Boolean
+    ) {
+        val decoder = MPG123(url)
+        decoder.printAll()
+        Thread {
+            runOnUiThread { tv?.text = "We are loading now" }
+            if (isSeekFrame) {
+                val tf = decoder.getTimeFrame((decoder.duration / 2).toDouble())
+                Log.i(TAG, "getTimeFrame ==>> $tf")
+                val seekResult = decoder.seekFrame(tf.toFloat(), SeekMode.SEEK_SET)
+                Log.i(TAG, "seekFrame ==>> $seekResult, current pos = ${decoder.position}")
+            } else {
+                val seekResult = decoder.seek((decoder.duration / 2))
+                Log.i(TAG, "seek sec ==>> $seekResult, current pos = ${decoder.position}")
+            }
+            val list = decode(decoder, File(url).length())
+            runOnUiThread {
+                tv?.text = "Finish"
+                sparkview_seek.sparkAnimator = MorphSparkAnimator()
+                sparkview_seek.adapter = MyAdapter(list)
+            }
+            decoder.close()
         }.start()
     }
 
@@ -93,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                 break
             } else {
                 count++
-                shortBuffer.add(calculateRealVolume(pcm))
+                shortBuffer.add(convertToWaveForm(pcm))
                 if (count > 50 && count % 50 == 0) {
                     percent = (count).toDouble() / (decoder.duration * 1000 / 26) * 100
                     runOnUiThread {
@@ -145,6 +193,10 @@ class MainActivity : AppCompatActivity() {
             return yData[index].toFloat()
         }
 
+    }
+
+    companion object {
+        const val TAG = "MPG123"
     }
 }
 

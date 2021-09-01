@@ -111,7 +111,16 @@ JNIEXPORT jshortArray JNICALL Java_com_lizhiweike_audioedit_MPG123_readFrame
 JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_getSeekFrameOffset
   (JNIEnv *, jclass, jlong, jfloat);
 
+JNIEXPORT jlong JNICALL
+Java_me_rosuh_libmpg123_MPG123_getTimeFrame(JNIEnv *env, jclass clazz, jlong handle, jdouble sec);
+
+JNIEXPORT jlong JNICALL
+Java_me_rosuh_libmpg123_MPG123_seekFrame(JNIEnv *env, jclass clazz, jlong handle, jfloat offset,
+                                         jint mode);
+
 #ifdef __cplusplus
 }
 #endif
 #endif
+
+

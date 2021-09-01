@@ -14,9 +14,8 @@
         android:layout_margin="16dp"
         android:text="Click button to load"
         android:textColor="#333333"
-        android:textSize="16dp"
+        android:textSize="32sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/sparkview"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,14 +25,15 @@
         android:id="@+id/sparkview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:spark_scrubEnabled="true"
-        app:spark_lineColor="#98c379"
-        app:spark_cornerRadius="5dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="8dp"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tv"
+        app:spark_cornerRadius="0.5dp"
+        app:spark_lineColor="#98c379"
+        app:spark_lineWidth="1dp"
+        app:spark_scrubEnabled="true" />
 
     <Button
         android:id="@+id/btn"
@@ -45,6 +45,44 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sparkview"
+        app:layout_constraintVertical_bias="0" />
+
+    <com.robinhood.spark.SparkView
+        android:id="@+id/sparkview_seek"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@id/btn_seek"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn"
+        app:spark_cornerRadius="0.5dp"
+        app:spark_lineColor="#98c379"
+        app:spark_lineWidth="1dp"
+        app:spark_scrubEnabled="true" />
+
+    <Button
+        android:id="@+id/btn_seek"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Seek by sec"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btn_seek_frame"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sparkview_seek"
+        app:layout_constraintVertical_bias="0" />
+
+    <Button
+        android:id="@+id/btn_seek_frame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Seek by frame"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_seek"
+        app:layout_constraintTop_toBottomOf="@id/sparkview_seek"
         app:layout_constraintVertical_bias="0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
