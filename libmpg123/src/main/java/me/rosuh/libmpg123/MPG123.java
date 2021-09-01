@@ -31,6 +31,10 @@ public class MPG123 {
 
     protected static native int getSeekFrameOffset(long handle, float position);
 
+    protected static native long getTimeFrame(long handle, double sec);
+
+    protected static native long seekFrame(long handle, float offset, int mode);
+
     private boolean _streamComplete = false;
 
     private long _handle = 0;
@@ -123,5 +127,39 @@ public class MPG123 {
 
     public boolean isStreamComplete() {
         return _streamComplete;
+    }
+
+    /**
+     * Return a MPEG frame offset corresponding to an offset in seconds.
+     * This assumes that the samples per frame do not change in the file/stream,
+     * which is a good assumption for any sane file/stream only.
+     * REF: https://www.mpg123.de/api/group__mpg123__seek.shtml
+     * @author hi@rosuh.me
+     * @since 0.1.2
+    */
+    public long getTimeFrame(double sec) {
+        return MPG123.getTimeFrame(_handle, sec);
+    }
+
+    /**
+     * Seek to a desired MPEG frame offset. Usage is modelled afer the standard lseek().
+     * REF: https://www.mpg123.de/api/group__mpg123__seek.shtml
+     * @author hi@rosuh.me
+     * @since 0.1.2
+    */
+    public long seekFrame(float offset, SeekMode mode) {
+        int nativeMode = 0;
+        switch (mode) {
+            case SEEK_CUR:
+                nativeMode = 0;
+                break;
+            case SEEK_SET:
+                nativeMode = 1;
+                break;
+            case SEEK_END:
+                nativeMode = 2;
+                break;
+        }
+        return MPG123.seekFrame(_handle, offset, nativeMode);
     }
 }

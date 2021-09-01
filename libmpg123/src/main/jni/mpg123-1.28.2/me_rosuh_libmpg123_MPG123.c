@@ -394,3 +394,19 @@ JNIEXPORT jint JNICALL Java_me_rosuh_libmpg123_MPG123_getSeekFrameOffset
         return -1;
     return offsets[target_index];
 }
+
+JNIEXPORT jlong JNICALL
+Java_me_rosuh_libmpg123_MPG123_getTimeFrame(JNIEnv *env, jclass clazz, jlong handle, jdouble sec) {
+    MP3File *mp3 = (MP3File *) handle;
+    return mpg123_timeframe(mp3->handle, sec);
+}
+
+JNIEXPORT jlong JNICALL
+Java_me_rosuh_libmpg123_MPG123_seekFrame(JNIEnv *env, jclass clazz, jlong handle, jfloat offset,
+                                         jint mode) {
+    MP3File *mp3 = (MP3File *) handle;
+    if (mode != SEEK_SET && mode != SEEK_CUR && mode != SEEK_END) {
+        mode = SEEK_SET;
+    }
+    return mpg123_seek_frame(mp3->handle, offset, mode);
+}
